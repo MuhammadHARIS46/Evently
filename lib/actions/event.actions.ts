@@ -2,10 +2,18 @@
 
 import { handleError } from "../utils";
 import { connectToDatabase } from "@/lib/database";
-import { CreateEventParams } from "@/types";
+import {
+  CreateEventParams,
+  UpdateEventParams,
+  DeleteEventParams,
+  GetAllEventsParams,
+  GetEventsByUserParams,
+  GetRelatedEventsByCategoryParams,
+} from '@/types'
 import User from "../database/models/user.model";
 import Event from "../database/models/event.model";
 import Category from '@/lib/database/models/category.model'
+import { revalidatePath } from "next/cache";
 
 
 const populateEvent = (query: any) => {
@@ -48,5 +56,44 @@ export const getEventById = async (eventId : string) =>{
   }
   catch (err) {
     handleError(err);
+  }
+}
+
+export async function getAllEvents({ query, limit = 6, page, category }: GetAllEventsParams) {
+  try {
+    await connectToDatabase()
+
+    // const titleCondition = query ? { title: { $regex: query, $options: 'i' } } : {}
+    // const categoryCondition = category ? await getCategoryByName(category) : null
+    // const conditions = {
+    //   $and: [titleCondition, categoryCondition ? { category: categoryCondition._id } : {}],
+    // }
+
+    // const skipAmount = (Number(page) - 1) * limit
+    const conditions = {}
+    const eventsQuery = Event.find(conditions)
+      .sort({ createdAt: 'desc' })
+      .skip(0)
+      .limit(limit)
+
+    const events = await populateEvent(eventsQuery)
+    const eventsCount = await Event.countDocuments(conditions)
+
+    return {
+      data: JSON.parse(JSON.stringify(events)),
+      totalPages: Math.ceil(eventsCount / limit),
+    }
+  } catch (error) {
+    handleError(error)
+  }
+}
+export async function deleteEvent({ eventId, path }: DeleteEventParams) {
+  try {
+    await connectToDatabase()
+
+    const deletedEvent = await Event.findByIdAndDelete(eventId)
+    if (deletedEvent) revalidatePath(path)
+  } catch (error) {
+    handleError(error)
   }
 }
