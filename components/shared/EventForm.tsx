@@ -29,7 +29,7 @@ import { createEvent,updateEvent  } from "@/lib/actions/event.actions";
 import { IEvent } from "@/lib/database/models/event.model"
 
 type EventFormProps = {
-  userId: string
+  userId: any
   type: "Create" | "Update"
   event?: IEvent,
   eventId?: string
@@ -37,6 +37,7 @@ type EventFormProps = {
 
 const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
   const [files, setFiles] = useState<File[]>([]);
+  console.log("ids",userId)
   const initialValues = event && type === 'Update' 
   ? { 
     ...event, 
