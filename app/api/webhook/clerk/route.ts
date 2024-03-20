@@ -74,8 +74,7 @@ export async function POST(req: Request) {
           userId: newUser._id
         }
       })
-    }localStorage.setItem("userId",newUser?._id)
-    console.log("newUser",newUser)
+    }
 
     return NextResponse.json({ message: 'OK', user: newUser })
   }
